@@ -18,6 +18,12 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    if (product.stock < quantity) {
+      return res.status(400).json({
+        message: "Not enough stock"
+      });
+    }
+
     const existingItem = await CartItem.findOne({
       where: {
         cart_id: cart.id,
@@ -42,7 +48,6 @@ exports.addToCart = async (req, res) => {
       price: product.price
     });
 
-    console.log("Existing item:", existingItem);
     res.json(item);
 
   } catch (error) {
@@ -63,6 +68,16 @@ exports.getCart = async (req, res) => {
         include: Product
       }
     });
+
+
+    if (!cart) {
+      return res.json({
+        cart_id: null,
+        items: [],
+        totalItems: 0,
+        subtotal: 0
+      });
+    }
 
     let subtotal = 0;
     let totalItems = 0;
@@ -90,9 +105,19 @@ exports.getCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
 
+    const userId = req.user.id;
     const { item_id } = req.body;
 
-    const item = await CartItem.findByPk(item_id);
+    const cart = await Cart.findOne({
+      where: { user_id: userId }
+    });
+
+    const item = await CartItem.findOne({
+      where: {
+        id: item_id,
+        cart_id: cart.id
+      }
+    });
 
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
@@ -100,14 +125,10 @@ exports.removeFromCart = async (req, res) => {
 
     await item.destroy();
 
-    res.json({
-      message: "Item removed"
-    });
+    res.json({ message: "Item removed" });
 
   } catch (error) {
-
     console.error(error);
     res.status(500).json({ message: "Error removing item" });
-
   }
 };

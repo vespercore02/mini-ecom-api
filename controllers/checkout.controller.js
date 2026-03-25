@@ -41,6 +41,17 @@ exports.checkout = async (req, res) => {
     }, { transaction });
 
     for (const item of cart.CartItems) {
+
+      const product = await Product.findByPk(item.product_id, { transaction });
+
+      if (product.stock < item.quantity) {
+        throw new Error("Insufficient stock during checkout");
+      }
+
+      await product.update({
+        stock: product.stock - item.quantity
+      }, { transaction });
+      
       await OrderItem.create({
         order_id: order.id,
         product_id: item.product_id,

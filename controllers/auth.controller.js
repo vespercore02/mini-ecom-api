@@ -6,7 +6,7 @@ const { generateToken } = require("../utils/jwt");
 exports.register = async (req, res) => {
   try {
 
-    const { email, password } = req.body;
+    const { first_name, middle_name, last_name, email, phone, password } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
 
@@ -17,7 +17,11 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
+      first_name,
+      middle_name,
+      last_name,
       email,
+      phone,
       password: hashedPassword
     });
 
@@ -77,4 +81,26 @@ exports.logout = async (req, res) => {
     message: "Logged out successfully"
   });
 
+};
+
+exports.updateUserStatus = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.update({ status });
+
+    res.json(user);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating user status" });
+  }
 };

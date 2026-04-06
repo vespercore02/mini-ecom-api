@@ -1,15 +1,21 @@
 const User = require("../../models/User");
+const Address = require("../../models/Address");
 const Product = require("../../models/Product");
 const Cart = require("../../models/Cart");
 const CartItem = require("../../models/CartItem");
 const Order = require("../../models/Order");
 const OrderItem = require("../../models/OrderItem");
+const ProductImage = require("../../models/ProductImage");
 
 function setupRelationships() {
 
   // User → Cart
   User.hasOne(Cart, { foreignKey: "user_id" });
   Cart.belongsTo(User, { foreignKey: "user_id" });
+
+  // User → Address
+  User.hasMany(Address, { foreignKey: "user_id" });
+  Address.belongsTo(User, { foreignKey: "user_id" });
 
   // Cart → Cart Items
   Cart.hasMany(CartItem, { foreignKey: "cart_id" });
@@ -29,6 +35,10 @@ function setupRelationships() {
   // Product → OrderItems
   Product.hasMany(OrderItem, { foreignKey: "product_id" });
   OrderItem.belongsTo(Product, { foreignKey: "product_id" });
+
+  // Product → ProductImages
+  Product.hasMany(ProductImage, { foreignKey: "product_id" });
+  ProductImage.belongsTo(Product, { foreignKey: "product_id" });
 
 }
 

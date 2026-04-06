@@ -18,6 +18,12 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    if (product.status !== "active") {
+      return res.status(400).json({
+        message: "Product is not available"
+      });
+    }
+
     if (product.stock < quantity) {
       return res.status(400).json({
         message: "Not enough stock"
@@ -69,6 +75,17 @@ exports.getCart = async (req, res) => {
       }
     });
 
+    const validItems = [];
+    const invalidItems = [];
+
+    cart.CartItems.forEach(item => {
+      if (item.Product.status !== "active" || item.Product.stock === 0) {
+        invalidItems.push(item);
+      } else {
+        validItems.push(item);
+      }
+    });
+
 
     if (!cart) {
       return res.json({
@@ -89,7 +106,8 @@ exports.getCart = async (req, res) => {
 
     res.json({
       cart_id: cart.id,
-      items: cart.CartItems,
+      validItems,
+      invalidItems,
       totalItems,
       subtotal
     });
@@ -130,5 +148,57 @@ exports.removeFromCart = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error removing item" });
+  }
+};
+
+exports.updateCartItem = async (req, res) => {
+  try {
+
+    const userId = req.user.id;
+    const { item_id, quantity } = req.body;
+
+    const cart = await Cart.findOne({
+      where: { user_id: userId }
+    });
+
+    const item = await CartItem.findOne({
+      where: {
+        id: item_id,
+        cart_id: cart.id
+      }
+    });
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const product = await Product.findByPk(item.product_id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // ✅ If quantity = 0 → remove
+    if (quantity <= 0) {
+      await item.destroy();
+      return res.json({ message: "Item removed" });
+    }
+
+    // ✅ Stock check
+    if (product.stock < quantity) {
+      return res.status(400).json({
+        message: "Not enough stock"
+      });
+    }
+
+    await item.update({ quantity });
+
+    res.json(item);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Error updating cart" });
+
   }
 };

@@ -1,31 +1,27 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const Product = sequelize.define("Product", {
+const ProductImage = sequelize.define("ProductImage", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
-  name: {
+  image_url: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+  is_cover: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
-  stock: {
+  sort_order: {
     type: DataTypes.INTEGER,
     defaultValue: 0
-  },
-  status: {
-    type: DataTypes.STRING,
-    defaultValue: "active"
   }
 }, {
-  tableName: "products",
+  tableName: "product_images",
   timestamps: true
 });
 
-module.exports = Product;
+module.exports = ProductImage;

@@ -16,7 +16,7 @@ A scalable Node.js backend for an e-commerce system featuring cart management, c
 
 ---
 
-### 🔥 v2 (In Progress)
+### 🔥 v2 
 
 * Authorization (Admin/User roles)
 * Product pagination & search
@@ -25,6 +25,17 @@ A scalable Node.js backend for an e-commerce system featuring cart management, c
 * Order status tracking
 * Product image upload
 * Soft delete system
+
+---
+
+### 🔥 v3
+* Real file upload for product images
+* Promo system
+* Shipping fee module
+* Payment integration
+* Inventory reservation
+* Picker / picking workflow
+* Admin dashboard APIs
 
 ---
 

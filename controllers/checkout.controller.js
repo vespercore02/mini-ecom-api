@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Product = require("../models/Product");
+const Address = require("../models/Address");
 
 const Order = require("../models/Order");
 const OrderItem = require("../models/OrderItem");
@@ -14,6 +15,20 @@ exports.checkout = async (req, res) => {
   try {
 
     const userId = req.user.id;
+    const { address_id } = req.body;
+
+    const address = await Address.findOne({
+      where: {
+        id: address_id,
+        user_id: userId
+      },
+      transaction
+    });
+
+    if (!address) {
+      await transaction.rollback();
+      return res.status(400).json({ message: "Invalid address" });
+    }
 
     const cart = await Cart.findOne({
       where: { user_id: userId },
@@ -37,7 +52,12 @@ exports.checkout = async (req, res) => {
 
     const order = await Order.create({
       user_id: userId,
-      total
+      total,
+      full_name: address.full_name,
+      phone: address.phone,
+      address_line: address.address_line,
+      city: address.city,
+      postal_code: address.postal_code
     }, { transaction });
 
     for (const item of cart.CartItems) {
@@ -51,7 +71,7 @@ exports.checkout = async (req, res) => {
       await product.update({
         stock: product.stock - item.quantity
       }, { transaction });
-      
+
       await OrderItem.create({
         order_id: order.id,
         product_id: item.product_id,

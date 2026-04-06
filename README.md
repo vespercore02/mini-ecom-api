@@ -28,7 +28,7 @@ A scalable Node.js backend for an e-commerce system featuring cart management, c
 
 ---
 
-### 🔥 v3
+### 🔥 v3 (In Progress)
 * Real file upload for product images
 * Promo system
 * Shipping fee module
